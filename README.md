@@ -21,8 +21,7 @@ A fully deployed **Machine Learning + Streamlit Web Application** that predicts 
 
 ## 🖼️ Screenshots (To Be Added)
 
-| 🔍 Prediction | ⚖️ Comparison | 📈 Feature Importance |
-|---------------|--------------|-----------------------|
+
 | *(<img width="1527" height="677" alt="Screenshot 2025-11-19 180303" src="https://github.com/user-attachments/assets/5a819930-78db-4bdd-a34c-1805af3c2d88" />
 )* | *(<img width="1668" height="712" alt="Screenshot 2025-11-19 180421" src="https://github.com/user-attachments/assets/3c5b1ab4-07e9-4f89-9b38-af147b59a27c" />
 )* | *(<img width="1619" height="735" alt="Screenshot 2025-11-19 180459" src="https://github.com/user-attachments/assets/7b3583d0-176b-4c6e-95b3-1104a6c054c7" />

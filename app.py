@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import pickle
 from datetime import datetime
+import time
 
 # ================== PAGE CONFIG ==================
 st.set_page_config(
@@ -11,35 +12,46 @@ st.set_page_config(
     layout="wide"
 )
 
-# ================== CUSTOM CSS FOR BEAUTIFUL UI ==================
+# ================== CUSTOM CSS (FONTS + COLORS) ==================
 st.markdown(
     """
     <style>
-    .main {
-        background-color: #f5f7fb;
+    /* Import Google Font */
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    html, body, [class*="css"]  {
+        font-family: 'Poppins', sans-serif;
     }
+
+    .main {
+        background: #f3f4f6;
+    }
+
     .top-bar {
-        background: #0f172a;
+        background: linear-gradient(90deg, #0f172a, #111827);
         color: white;
-        padding: 10px 20px;
-        border-radius: 0 0 12px 12px;
+        padding: 10px 24px;
+        border-radius: 0 0 16px 16px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 15px;
+        margin-bottom: 18px;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.4);
     }
     .top-bar-left h2 {
         margin: 0;
-        font-size: 20px;
+        font-size: 22px;
+        font-weight: 600;
     }
     .top-bar-left p {
         margin: 0;
         font-size: 13px;
-        opacity: 0.85;
+        opacity: 0.8;
     }
     .top-bar-right {
         font-size: 13px;
         text-align: right;
+        line-height: 1.4;
     }
     .top-bar-right a {
         color: #38bdf8;
@@ -48,29 +60,38 @@ st.markdown(
     }
     .title-container {
         padding: 18px 22px;
-        border-radius: 15px;
-        background: linear-gradient(135deg, #1e88e5, #42a5f5);
+        border-radius: 18px;
+        background: linear-gradient(135deg, #2563eb, #38bdf8);
         color: white;
-        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.35);
+        box-shadow: 0 4px 16px rgba(37, 99, 235, 0.5);
         margin-bottom: 20px;
+    }
+    .title-container h1 {
+        margin-bottom: 4px;
+        font-weight: 700;
+    }
+    .title-container h4 {
+        margin-top: 4px;
+        margin-bottom: 10px;
+        font-weight: 500;
     }
     .info-card {
         background-color: white;
-        padding: 15px 20px;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
-        margin-bottom: 15px;
+        padding: 16px 20px;
+        border-radius: 14px;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+        margin-bottom: 16px;
     }
     .result-box {
-        background: #e3f2fd;
-        border-left: 6px solid #1e88e5;
+        background: #e0f2fe;
+        border-left: 6px solid #2563eb;
         padding: 15px 20px;
-        border-radius: 10px;
+        border-radius: 12px;
         margin-top: 15px;
     }
     .footer {
         font-size: 13px;
-        color: #666666;
+        color: #6b7280;
         margin-top: 30px;
         text-align: center;
     }
@@ -96,8 +117,6 @@ if "prediction_history" not in st.session_state:
     st.session_state["prediction_history"] = []  # list of dicts
 
 # ================== TOP DEVELOPER INFO BAR ==================
-# 👉 Replace phone number and LinkedIn URL with your real details
-# ================== TOP DEVELOPER INFO BAR ==================
 st.markdown(
     """
     <div class="top-bar">
@@ -115,7 +134,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
 # ================== HEADER SECTION ==================
 st.markdown(
     """
@@ -132,20 +150,19 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ================== SIDEBAR – ABOUT + USER INPUTS ==================
+# ================== SIDEBAR – ABOUT + CAR A INPUTS + FUEL SETTINGS ==================
 st.sidebar.title("📌 About this App")
 st.sidebar.info(
     "This app predicts **car mileage** in MPG (Miles Per Gallon) and also shows "
     "approximate **km/l (kilometres per litre)**.\n\n"
     "It is built on the classic **Auto MPG dataset** and uses a Machine Learning model "
     "trained with Python, scikit-learn and XGBoost.\n\n"
-    "फ्यूल एफिशिएंसी समझने और कार compare करने के लिए ये app useful है।"
+    "फ्यूल एफिशिएंसी समझने और कार compare करने के लिए ये app उपयोगी है।"
 )
 
 st.sidebar.markdown("---")
 st.sidebar.title("⚙️ Car A – Enter Details")
 
-# ---- Car A Input widgets (sidebar) ----
 cylinders_A = st.sidebar.selectbox(
     "Number of Cylinders",
     options=[3, 4, 5, 6, 8],
@@ -196,7 +213,6 @@ origin_map = {
 }
 origin_A = origin_map[origin_display_A]
 
-# ---- Fuel cost settings ----
 st.sidebar.markdown("---")
 st.sidebar.title("⛽ Fuel Cost Settings")
 
@@ -212,7 +228,7 @@ fuel_price = st.sidebar.number_input(
     help="Current petrol/diesel price per litre in your city."
 )
 
-# ================== FUNCTIONS ==================
+# ================== HELPER FUNCTIONS ==================
 def make_input_df(cylinders, displacement, horsepower, weight, acceleration, model_year, origin):
     """Build a single-row DataFrame with correct column names."""
     return pd.DataFrame({
@@ -235,7 +251,11 @@ def compute_fuel_cost(kmpl, monthly_km, fuel_price):
     return monthly_cost, yearly_cost
 
 # ================== MAIN CONTENT – TABS ==================
-tab1, tab2, tab3 = st.tabs(["📊 Prediction & Comparison", "📈 Insights & Feature Importance", "ℹ️ How this app works"])
+tab1, tab2, tab3 = st.tabs([
+    "📊 Prediction & Comparison",
+    "📈 Insights & Feature Importance",
+    "ℹ️ How this app works"
+])
 
 # -------- TAB 1: PREDICTION & COMPARISON --------
 with tab1:
@@ -248,7 +268,7 @@ with tab1:
     )
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # ========== Single Car Mode ==========
+    # ===== Single Car Mode =====
     if mode == "Single Car Prediction":
         input_df_A = make_input_df(
             cylinders_A, displacement_A, horsepower_A, weight_A,
@@ -269,7 +289,10 @@ with tab1:
         else:
             if st.button("🚀 Predict Mileage for Car A"):
                 try:
-                    prediction = model.predict(input_df_A)
+                    with st.spinner("Running ML model for Car A..."):
+                        time.sleep(0.6)
+                        prediction = model.predict(input_df_A)
+
                     mpg = float(prediction[0])
                     kmpl = mpg * 0.425144  # conversion
 
@@ -306,14 +329,14 @@ with tab1:
                     st.error("⚠️ Prediction failed. Please check that the model and input features match.")
                     st.exception(e)
 
-    # ========== Compare Two Cars Mode ==========
+    # ===== Compare Two Cars Mode =====
     else:
         st.markdown('<div class="info-card">', unsafe_allow_html=True)
         st.subheader("🚗 Compare Car A vs Car B")
 
         colA, colB = st.columns(2)
 
-        # Car A summary (from sidebar values)
+        # Car A summary
         with colA:
             st.markdown("### Car A")
             input_df_A = make_input_df(
@@ -349,8 +372,10 @@ with tab1:
         else:
             if st.button("⚖️ Compare Car A and Car B"):
                 try:
-                    pred_A = model.predict(input_df_A)[0]
-                    pred_B = model.predict(input_df_B)[0]
+                    with st.spinner("Comparing Car A and Car B..."):
+                        time.sleep(0.7)
+                        pred_A = model.predict(input_df_A)[0]
+                        pred_B = model.predict(input_df_B)[0]
 
                     mpg_A, mpg_B = float(pred_A), float(pred_B)
                     kmpl_A, kmpl_B = mpg_A * 0.425144, mpg_B * 0.425144
@@ -409,7 +434,7 @@ with tab1:
                     st.error("⚠️ Comparison failed. Please check model and inputs.")
                     st.exception(e)
 
-    # ========== Show prediction history ==========
+    # ===== Prediction history =====
     if st.session_state["prediction_history"]:
         st.markdown('<div class="info-card">', unsafe_allow_html=True)
         st.subheader("📜 Recent Predictions (this session)")
@@ -417,7 +442,6 @@ with tab1:
         st.dataframe(hist_df.tail(10), use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-# -------- TAB 2: FEATURE IMPORTANCE --------
 # -------- TAB 2: FEATURE IMPORTANCE --------
 with tab2:
     st.markdown('<div class="info-card">', unsafe_allow_html=True)
@@ -427,12 +451,10 @@ with tab2:
         st.error("Model file not found. Cannot compute feature importance.")
     else:
         try:
-            # Your saved model is a plain XGBRegressor (not a Pipeline)
             if hasattr(model, "feature_importances_"):
                 importances = model.feature_importances_
                 n_features = len(importances)
 
-                # Expected feature names (if you trained on raw columns directly)
                 default_feature_names = [
                     "cylinders",
                     "displacement",
@@ -446,7 +468,6 @@ with tab2:
                 if n_features == len(default_feature_names):
                     feature_names = default_feature_names
                 else:
-                    # Fallback in case shape is different
                     feature_names = [f"Feature_{i}" for i in range(n_features)]
 
                 fi_df = pd.DataFrame({
@@ -461,7 +482,7 @@ with tab2:
 
                 st.write(
                     "Higher importance means the feature has more influence on the mileage prediction.\n\n"
-                    "Typically, features like **weight, displacement, horsepower and cylinders** "
+                    "Generally, features like **weight, displacement, horsepower and cylinders** "
                     "have a strong impact on fuel efficiency."
                 )
             else:
@@ -479,10 +500,10 @@ with tab3:
 
     st.write(
         """
-        - This app predicts **car mileage** using a trained **Machine Learning model**.  
-        - It takes common car specifications as input and outputs the expected **MPG** and equivalent **km/l**.  
-        - It also estimates monthly & yearly **fuel cost** based on your running and fuel price.  
-        - You can even **compare two cars (A vs B)** side-by-side.
+        - Predicts **car mileage** using a trained **Machine Learning model**.  
+        - Outputs expected **MPG** and equivalent **km/l**.  
+        - Estimates **monthly & yearly fuel cost** based on your usage and fuel price.  
+        - Lets you **compare two cars (A vs B)** side-by-side.
         """
     )
     st.markdown('</div>', unsafe_allow_html=True)
@@ -494,10 +515,10 @@ with tab3:
         """
         1. Data cleaning (handling missing values like horsepower).  
         2. Outlier removal using statistical methods (IQR).  
-        3. Feature engineering – scaling numeric features and encoding categorical variables via **scikit-learn Pipelines**.  
+        3. Feature engineering – scaling numeric features and encoding categorical variables.  
         4. Multiple algorithms tested: **Linear Regression, Lasso, Ridge, XGBoost**.  
-        5. Best model (XGBoost + preprocessing pipeline) saved as `mpg_prediction_model.pkl`.  
-        6. This Streamlit app loads the saved model and makes predictions in real-time.
+        5. Best model (XGBoost) saved as `mpg_prediction_model.pkl`.  
+        6. Streamlit app loads the saved model and predicts in real-time.
         """
     )
     st.markdown('</div>', unsafe_allow_html=True)

@@ -6,7 +6,14 @@ A fully deployed **Machine Learning + Streamlit Web Application** that predicts 
 👨‍💻 **Developed by:** **Dikesh Chavhan**
 
 ---
+📊 Dataset Information
 
+🚘 Dataset Name: Auto MPG Dataset
+📥 Source: Kaggle / UCI Machine Learning Repository
+🔗 Kaggle Link: https://www.kaggle.com/datasets/uciml/autompg-dataset
+
+📈 Number of Records: 398 Cars
+---
 ## 📌 Key Features
 
 🔹 **Predict Mileage** (Miles Per Gallon + Kilometres per Litre)  

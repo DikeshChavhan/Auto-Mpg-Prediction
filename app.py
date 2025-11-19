@@ -97,22 +97,24 @@ if "prediction_history" not in st.session_state:
 
 # ================== TOP DEVELOPER INFO BAR ==================
 # 👉 Replace phone number and LinkedIn URL with your real details
+# ================== TOP DEVELOPER INFO BAR ==================
 st.markdown(
     """
     <div class="top-bar">
         <div class="top-bar-left">
             <h2>Auto MPG – ML Web App</h2>
-            <p>End-to-end Machine Learning project deployed with Streamlit</p>
+            <p>End-to-end Machine Learning project deployed using Streamlit</p>
         </div>
         <div class="top-bar-right">
             <div>👨‍💻 <b>Dikesh Chavhan</b></div>
-            <div>📞 +91-XXXXXXXXXX</div>
-            <div>🔗 <a href="https://www.linkedin.com/in/your-linkedin-id" target="_blank">LinkedIn Profile</a></div>
+            <div>📞 <a href="tel:+918591531092" style="color:#38bdf8;text-decoration:none;font-weight:600;">+91-8591531092</a></div>
+            <div>🔗 <a href="https://www.linkedin.com/in/dikeshchavhan18" target="_blank" style="color:#38bdf8;text-decoration:none;font-weight:600;">LinkedIn Profile</a></div>
         </div>
     </div>
     """,
     unsafe_allow_html=True
 )
+
 
 # ================== HEADER SECTION ==================
 st.markdown(

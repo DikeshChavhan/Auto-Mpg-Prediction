@@ -416,6 +416,7 @@ with tab1:
         st.markdown('</div>', unsafe_allow_html=True)
 
 # -------- TAB 2: FEATURE IMPORTANCE --------
+# -------- TAB 2: FEATURE IMPORTANCE --------
 with tab2:
     st.markdown('<div class="info-card">', unsafe_allow_html=True)
     st.subheader("📈 Feature Importance (from ML model)")
@@ -424,33 +425,47 @@ with tab2:
         st.error("Model file not found. Cannot compute feature importance.")
     else:
         try:
-            # We assume pipeline names: 'preprocess' and 'model' (XGBRegressor)
-            preprocessor = model.named_steps["preprocess"]
-            regressor = model.named_steps["model"]
+            # Your saved model is a plain XGBRegressor (not a Pipeline)
+            if hasattr(model, "feature_importances_"):
+                importances = model.feature_importances_
+                n_features = len(importances)
 
-            if hasattr(regressor, "feature_importances_"):
-                feature_names = preprocessor.get_feature_names_out()
-                importances = regressor.feature_importances_
+                # Expected feature names (if you trained on raw columns directly)
+                default_feature_names = [
+                    "cylinders",
+                    "displacement",
+                    "horsepower",
+                    "weight",
+                    "acceleration",
+                    "model year",
+                    "origin"
+                ]
+
+                if n_features == len(default_feature_names):
+                    feature_names = default_feature_names
+                else:
+                    # Fallback in case shape is different
+                    feature_names = [f"Feature_{i}" for i in range(n_features)]
 
                 fi_df = pd.DataFrame({
                     "Feature": feature_names,
                     "Importance": importances
-                }).sort_values(by="Importance", ascending=False).head(10)
+                }).sort_values(by="Importance", ascending=False)
 
-                st.write("Top 10 most important features (after preprocessing):")
+                st.write("Model thinks these features are most important for predicting mileage:")
                 st.dataframe(fi_df, use_container_width=True)
 
                 st.bar_chart(fi_df.set_index("Feature"))
 
                 st.write(
-                    "These are model-level importances after encoding & scaling. "
-                    "Generally, features like **weight, displacement, horsepower, cylinders** "
-                    "have a strong impact on mileage."
+                    "Higher importance means the feature has more influence on the mileage prediction.\n\n"
+                    "Typically, features like **weight, displacement, horsepower and cylinders** "
+                    "have a strong impact on fuel efficiency."
                 )
             else:
                 st.info("Current model does not expose `feature_importances_`.")
         except Exception as e:
-            st.error("Could not compute feature importance due to a mismatch in pipeline structure.")
+            st.error("Could not compute feature importance due to a mismatch in model structure.")
             st.exception(e)
 
     st.markdown('</div>', unsafe_allow_html=True)
